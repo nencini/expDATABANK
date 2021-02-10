@@ -106,12 +106,14 @@ def search_exp(searchParameters):
                with open(READMEfilepath) as yaml_file:
                    readme = yaml.load(yaml_file, Loader=yaml.FullLoader)
                    lipid = searchParameters['LIPID']
-                   print(readme)
+                   #print(readme)
                    molecules = readme['MOLECULE_AMOUNTS']
-                   print(molecules.keys())
-                   
+                  # print(molecules.keys())
+                   texp = int(readme.get('TEMPERATURE'))
+                   tmin = searchParameters['T_RANGE'][0]
+                   tmax = searchParameters['T_RANGE'][1]
                    try:
-                       if float(molecules[lipid])==searchParameters['AMOUNT']:
+                       if float(molecules[lipid])==searchParameters['AMOUNT'] and (texp >= tmin and texp <= tmax):
                            print(readme)
                            dataPath = subdir + '/Order_Parameters.dat'
                            experiments.append(Experiment(readme,dataPath)) #saves the path to data
