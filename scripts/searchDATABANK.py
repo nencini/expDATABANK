@@ -11,27 +11,11 @@ from matplotlib import cm
 #search parameters
 #T_RANGE is range of temperatures to be searched
 #mixture of lipids????
-searchParameters = {'LIPID' : 'POPE', 'T_RANGE': [290,320] ,'AMOUNT' : 1}
+searchParameters = {'LIPID' : 'POPC', 'T_RANGE': [290,320] ,'AMOUNT' : 1}
 
 #dictionaries
-lipid_numbers_dict = {
-                'NPOPC' : {"REQUIRED": False,
-                              "TYPE": "array",
-                          },
-                'NPOPG' : {"REQUIRED": False,
-                            "TYPE" : "array",
-                         },
-                'NPOPS' : {"REQUIRED": False,
-                            "TYPE" : "array",
-                        },
-                'NPOPE' : {"REQUIRED": False,
-                            "TYPE" : "array",
-                        },
-    
-                'NCHOL' : {"REQUIRED": False,
-                            "TYPE" : "array",
-                        },
-              }
+lipid_numbers_list = [ 'NPOPC', 'NPOPG', 'NPOPS', 'NPOPE', 'NCHOL'] 
+
 
 class Simulation:
     def __init__(self, readme, data):
@@ -48,8 +32,8 @@ class Experiment:
 
 
 
-#returns te relative amount of molecule in the membrane not per single leaflet
-def relativeAmount(readme, molecule,molecules=lipid_numbers_dict):
+#returns the relative amount of molecule in the entire membrane not per single leaflet
+def relativeAmount(readme, molecule,molecules=lipid_numbers_list):
     sum_molecules = 0
     for key in molecules:
         try:
@@ -65,7 +49,7 @@ def relativeAmount(readme, molecule,molecules=lipid_numbers_dict):
 #returns list of simulations that match to search parameters
 def search_simulations(searchParameters):
     simulations = []
-    for subdir, dirs, files in os.walk(r'/media/akiirikk/DATADRIVE1/tietokanta/NMRlipidsIVPEandPG/Data/Simulations/'): 
+    for subdir, dirs, files in os.walk(r'../../NMRlipidsIVPEandPG/Data/Simulations/'): 
         for filename1 in files:
             filepath = subdir + os.sep + filename1
             if filepath.endswith("README.yaml"):
@@ -74,12 +58,17 @@ def search_simulations(searchParameters):
                     readme = yaml.load(yaml_file, Loader=yaml.FullLoader)
                     lipid = searchParameters['LIPID']
                     lipid_amount = relativeAmount(readme, lipid)
+                    #print(readme.get('SYSTEM'))
+                    #print(filepath)
                     #print(lipid_amount)
                     tsim = int(readme.get('TEMPERATURE'))
                     tmin = searchParameters['T_RANGE'][0]
                     tmax = searchParameters['T_RANGE'][1]
                     #check that lipid, its amount and temperature match the search parameters 
                     if (readme.get('N'+lipid) != 0) and (lipid_amount == searchParameters['AMOUNT']) and (tsim >= tmin and tsim <= tmax):
+                        print(readme.get('SYSTEM'))
+                        print(filepath)
+                        print(lipid_amount)
                         print(readme)
                     #
                         for filename2 in files:
