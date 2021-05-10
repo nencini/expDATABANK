@@ -187,7 +187,7 @@ for simulation in simulations:
             if (mf_ok == len(sim_mol_fractions.keys())) and (t_exp >= int(t_sim) - 2) and (t_exp <= int(t_sim) + 2):
               #  print(simulation.indexingPath)
                 pairs.append([simulation, experiment])
-
+#make file paths for saving quality evaluation plots
 
 os.system('mkdir ../Data/QualityEvaluation')     
 os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
@@ -195,10 +195,10 @@ os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
 #make file paths for saving quality evaluation plots
 for pair in pairs:
     sub_dirs = pair[0].indexingPath.split("/")
-    os.system('mkdir ./QualityEvaluation/' + sub_dirs[0])
-    os.system('mkdir ./QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1])
-    os.system('mkdir ./QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
-    os.system('mkdir ./QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
+    os.system('mkdir ../Data/QualityEvaluation' + sub_dirs[0])
+    os.system('mkdir ../Data/QualityEvaluation' + sub_dirs[0] + '/' + sub_dirs[1])
+    os.system('mkdir ../Data/QualityEvaluation' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
+    os.system('mkdir ../Data/QualityEvaluation' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
     plotData(pair[0],pair[1])
             
 
