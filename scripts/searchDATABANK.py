@@ -4,7 +4,7 @@ import json
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-databank_path = '../../NMRLipids_Databank_updated/Databank/Data/Simulations'
+databank_path = '../../Databank/Data/Simulations'
 
 
 lipid_numbers_list = [ 'POPC', 'POPG', 'POPS', 'POPE', 'CHOL']
