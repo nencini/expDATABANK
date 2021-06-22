@@ -202,7 +202,7 @@ for subdir, dirs, files in os.walk(r'../../NMRLipids_Databank/Databank/Data/Simu
                         with open(OPfilepath) as json_file:
                             simOPdata[key_data1] = json.load(json_file) #modify to contain OP data of each lipid in the membrane thst it works for mixtures
                             json_file.close()
-                simulations.append(Simulation(readmeSim, simOPdata, indexingPath)) #toimiiks?
+                simulations.append(Simulation(readmeSim, simOPdata, indexingPath))
                 yaml_file_sim.close()
                     
 experiments = []                    
@@ -257,7 +257,7 @@ for simulation in simulations:
     for experiment in experiments: 
     #    print(experiment.readme)
     # check lipid composition matches the simulation
-        exp_lipids = experiment.getLipids() ### MUUT MOLEKYYLIT?
+        exp_lipids = experiment.getLipids() 
       #  print(experiment.getLipids())
 
         exp_total_lipid_concentration = experiment.readme['TOTAL_LIPID_CONCENTRATION']
@@ -273,13 +273,9 @@ for simulation in simulations:
             for key in sim_molecules: 
                 if (experiment.readme['ION_CONCENTRATIONS'][key] >= sim_concentrations[key] - 0.05) and (experiment.readme['ION_CONCENTRATIONS'][key] <= sim_concentrations[key] + 0.05):
                     c_ok += 1
-               #     print("TOIMII") #TOIMII
+
 
             switch = 0
-      #      print("koe:")
-      #      print(type(exp_total_lipid_concentration))
-      #      print("simulaatio:")
-      #      print(type(sim_total_lipid_concentration))
             
             if (type(exp_total_lipid_concentration) == float) and (type(sim_total_lipid_concentration) == float): 
                 if ((exp_total_lipid_concentration >= sim_total_lipid_concentration - 0.1) and (exp_total_lipid_concentration <= sim_total_lipid_concentration + 0.1)):
@@ -289,11 +285,9 @@ for simulation in simulations:
                     switch = 1
                         
             if switch == 1: 
-         #       print("toimii")
             #check temperature +/- 2 degrees
                 t_exp = experiment.readme['TEMPERATURE']
                 if (mf_ok == len(sim_lipids)) and (c_ok == len(sim_molecules)) and (t_exp >= float(t_sim) - 2.0) and (t_exp <= float(t_sim) + 2.0):
-                    print("Onnistui jee!!")
                     #  print(simulation.indexingPath)
                     pairs.append([simulation, experiment])
                     print(simulation.readme['SYSTEM'])
