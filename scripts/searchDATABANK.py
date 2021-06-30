@@ -47,7 +47,7 @@ class Simulation:
         
     # concentration of other molecules than lipids 
     # change name to ionConcentration()
-    def ionConcentration(self, molecule):
+    def ionConcentration(self, molecule, exp_counter_ions):
         lipids1 = self.getLipids()
         c_water = 55.5
         N_water = self.readme['NSOL']
@@ -55,16 +55,23 @@ class Simulation:
             N_molecule = self.readme['N'+molecule] #number of ions
         except KeyError:
             N_molecule = 0
+            
+
         
         lipids2 = []
-        for lipid in lipids1:
-            N_lipid = self.readme['N'+lipid]
-            if N_molecule >= sum(N_lipid):
-               lipids2.append(sum(N_lipid))
+        if exp_counter_ions and N_molecule != 0:
+            for lipid in lipids1:
+                if molecule in exp_counter_ions.keys() and lipid == exp_counter_ions[molecule]:
+                    N_lipid = self.readme['N'+lipid]
+                    print("TÄSSÄ" + molecule + " " + lipid)
+                    print(self.readme)
+                    lipids2.append(sum(N_lipid))
         
         N_molecule = N_molecule - sum(lipids2)
+        print(N_molecule)
             
         c_molecule = (N_molecule * c_water) / N_water
+        print(c_molecule)
         
         return c_molecule
         
@@ -244,35 +251,39 @@ for exp_subdir, exp_dirs, exp_files in os.walk(r'../Data/experiments'):
 #Pair each simulation with an experiment with the closest matching temperature and composition
 pairs = []
 
-for simulation in simulations:
-    sim_lipids = simulation.getLipids()
-    sim_molecules = getMolecules(simulation.readme, molecules= ions)
-    sim_total_lipid_concentration = simulation.totalLipidConcentration() 
-    #print(lipids)
-    t_sim = simulation.readme['TEMPERATURE']
-    sim_molar_fractions = {}
-    #calculate molar fractions from simulation
-    for lipid in sim_lipids:
-        sim_molar_fractions[lipid] = simulation.molarFraction(lipid)
-    print(simulation.readme['SYSTEM'])
-    print(sim_molar_fractions)
-    print("total lipid concentration: " + str(sim_total_lipid_concentration))
-
-    #calculate concentrations of other molecules
-    sim_concentrations = {}
-    for molecule in ions:
-        sim_concentrations[molecule] = simulation.ionConcentration(molecule)
-    print(sim_concentrations)
-    
-    for experiment in experiments: 
-    #    print(experiment.readme)
+for experiment in experiments: 
+ #    print(experiment.readme)
     # check lipid composition matches the simulation
-        exp_lipids = experiment.getLipids() 
+    exp_lipids = experiment.getLipids() 
       #  print(experiment.getLipids())
 
-        exp_total_lipid_concentration = experiment.readme['TOTAL_LIPID_CONCENTRATION']
+    exp_total_lipid_concentration = experiment.readme['TOTAL_LIPID_CONCENTRATION']
+    exp_counter_ions = experiment.readme['COUNTER_IONS']
 
+    for simulation in simulations:
+        sim_lipids = simulation.getLipids()
+        # continue if lipids are same
         if set(sim_lipids) == set(exp_lipids):
+            sim_molecules = getMolecules(simulation.readme, molecules= ions)
+            sim_total_lipid_concentration = simulation.totalLipidConcentration() 
+            #print(lipids)
+            t_sim = simulation.readme['TEMPERATURE']
+            sim_molar_fractions = {}
+            #calculate molar fractions from simulation
+            for lipid in sim_lipids:
+                sim_molar_fractions[lipid] = simulation.molarFraction(lipid)
+            print(simulation.readme['SYSTEM'])
+            print(sim_molar_fractions)
+            print("total lipid concentration: " + str(sim_total_lipid_concentration))
+
+            #calculate concentrations of other molecules
+            sim_concentrations = {}
+            for molecule in ions:
+                sim_concentrations[molecule] = simulation.ionConcentration(molecule, exp_counter_ions)
+            print(sim_concentrations)
+    
+
+        
             mf_ok = 0
             for key in sim_lipids:
                 if (experiment.readme['MOLAR_FRACTIONS'][key] >= sim_molar_fractions[key] - 0.05) and (experiment.readme['MOLAR_FRACTIONS'][key] <= sim_molar_fractions[key]+ 0.05):
