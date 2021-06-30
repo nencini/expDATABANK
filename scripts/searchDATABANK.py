@@ -10,7 +10,7 @@ databank_path = '../../NMRLipids_Databank/Databank/Data/Simulations'
 
 
 lipid_numbers_list = ['POPC', 'POPG', 'POPS', 'POPE', 'CHOL', 'DPPC', 'DHMDMAB', 'DMPC', 'POPI'] # should contain all lipid names
-other_molecules = ['POT', 'SOD', 'CLA', 'CAL'] # should contain names of all the other molecules than lipids
+ions = ['POT', 'SOD', 'CLA', 'CAL'] # should contain names of all ions
 
 
 class Simulation:
@@ -45,14 +45,24 @@ class Simulation:
         return number / sum_lipids
         
         
-    # concentration of other molecules than lipids    
-    def moleculeConcentration(self, molecule):
+    # concentration of other molecules than lipids 
+    # change name to ionConcentration()
+    def ionConcentration(self, molecule):
+        lipids1 = self.getLipids()
         c_water = 55.5
         N_water = self.readme['NSOL']
         try:
-            N_molecule = self.readme['N'+molecule]
+            N_molecule = self.readme['N'+molecule] #number of ions
         except KeyError:
             N_molecule = 0
+        
+        lipids2 = []
+        for lipid in lipids1:
+            N_lipid = self.readme['N'+lipid]
+            if N_molecule >= sum(N_lipid):
+               lipids2.append(sum(N_lipid))
+        
+        N_molecule = N_molecule - sum(lipids2)
             
         c_molecule = (N_molecule * c_water) / N_water
         
@@ -66,8 +76,9 @@ class Simulation:
         for lipid in lipids:
             N_lipids += sum(self.readme['N'+lipid])
         try:
-            if (N_water / N_lipids) > 30 :
+            if (N_water / N_lipids) > 25 :
                 tot_lipid_c = 'full hydration'
+              #  print('full hydration')
             else:
                 tot_lipid_c = (N_lipids * c_water) / N_water
         except ZeroDivisionError:
@@ -181,7 +192,7 @@ def plotData(simulation, experiment):
         plt.close()
 
 ##############################################
-#loop over the simulations in the simulation databank
+#loop over the simulations in the simulation databank and read simulation readme and order parameter files into objects
 simulations = []
 
 for subdir, dirs, files in os.walk(r'../../NMRLipids_Databank/Databank/Data/Simulations/'): 
@@ -193,18 +204,18 @@ for subdir, dirs, files in os.walk(r'../../NMRLipids_Databank/Databank/Data/Simu
             with open(READMEfilepathSimulation) as yaml_file_sim:
                 readmeSim = yaml.load(yaml_file_sim, Loader=yaml.FullLoader)
                 indexingPath = "/".join(filepath.split("/")[6:10])
-                simOPdata = {} #order parameter files for each lipid
+                simOPdata = {} #order parameter files for each type of lipid
                 for filename2 in files:
-                    #print(filename2)
                     if filename2.endswith('OrderParameters.json'):
                         key_data1 = filename2.replace('OrderParameters.json', '')
                         OPfilepath = subdir + '/' + filename2
                         with open(OPfilepath) as json_file:
-                            simOPdata[key_data1] = json.load(json_file) #modify to contain OP data of each lipid in the membrane thst it works for mixtures
+                            simOPdata[key_data1] = json.load(json_file)
                             json_file.close()
                 simulations.append(Simulation(readmeSim, simOPdata, indexingPath))
                 yaml_file_sim.close()
-                    
+                
+#loop over the experiment entries in the experiment databank and read experiment readme and order parameter files into objects 
 experiments = []                    
 for exp_subdir, exp_dirs, exp_files in os.walk(r'../Data/experiments'):
     for filename1 in exp_files:
@@ -235,7 +246,7 @@ pairs = []
 
 for simulation in simulations:
     sim_lipids = simulation.getLipids()
-    sim_molecules = getMolecules(simulation.readme, molecules= other_molecules)
+    sim_molecules = getMolecules(simulation.readme, molecules= ions)
     sim_total_lipid_concentration = simulation.totalLipidConcentration() 
     #print(lipids)
     t_sim = simulation.readme['TEMPERATURE']
@@ -249,9 +260,8 @@ for simulation in simulations:
 
     #calculate concentrations of other molecules
     sim_concentrations = {}
-    for molecule in other_molecules:
-        if (molecule != 'SOL'):
-            sim_concentrations[molecule] = simulation.moleculeConcentration(molecule)
+    for molecule in ions:
+        sim_concentrations[molecule] = simulation.ionConcentration(molecule)
     print(sim_concentrations)
     
     for experiment in experiments: 
@@ -270,9 +280,18 @@ for simulation in simulations:
 
             c_ok = 0
 
-            for key in sim_molecules: 
-                if (experiment.readme['ION_CONCENTRATIONS'][key] >= sim_concentrations[key] - 0.05) and (experiment.readme['ION_CONCENTRATIONS'][key] <= sim_concentrations[key] + 0.05):
-                    c_ok += 1
+#            if 'POPG' in simulation.readme['SYSTEM']: 
+#                print(simulation.indexingPath)
+                
+#            if 'POPE' in simulation.readme['SYSTEM']:
+#                print(simulation.indexingPath)
+            
+            if sim_molecules:
+                for key in sim_molecules: 
+                    if (experiment.readme['ION_CONCENTRATIONS'][key] >= sim_concentrations[key] - 0.05) and (experiment.readme['ION_CONCENTRATIONS'][key] <= sim_concentrations[key] + 0.05):
+                        c_ok += 1
+            else:                    
+                c_ok = 0
 
 
             switch = 0
@@ -304,15 +323,15 @@ for simulation in simulations:
                 
 #make file paths for saving quality evaluation plots
 os.system('mkdir ../Data/QualityEvaluation')     
-os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
-
+#os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
+os.system('mkdir ../Data/QualityEvaluation/TST')
 
 for pair in pairs:
     sub_dirs = pair[0].indexingPath.split("/")
-    os.system('mkdir ../Data/QualityEvaluation/OrderParameters/' + sub_dirs[0])
-    os.system('mkdir ../Data/QualityEvaluation/OrderParameters/' + sub_dirs[0] + '/' + sub_dirs[1])
-    os.system('mkdir ../Data/QualityEvaluation/OrderParameters/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
-    os.system('mkdir ../Data/QualityEvaluation/OrderParameters/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
+    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0])
+    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1])
+    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
+    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
     
     #plot order parameters
 #    plotData(pair[0],pair[1])
