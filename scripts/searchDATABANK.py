@@ -10,7 +10,7 @@ databank_path = '../../NMRLipids_Databank/Databank/Data/Simulations'
 
 
 lipid_numbers_list = ['POPC', 'POPG', 'POPS', 'POPE', 'CHOL', 'DPPC', 'DHMDMAB', 'DMPC', 'POPI'] # should contain all lipid names
-ions = ['POT', 'SOD', 'CLA', 'CAL'] # should contain names of all ions
+ions_list = ['POT', 'SOD', 'CLA', 'CAL'] # should contain names of all ions
 
 
 class Simulation:
@@ -28,6 +28,18 @@ class Simulation:
             except KeyError:
                 continue
         return lipids
+    
+    def getIons(self, ions):
+        simIons = []
+        
+        for key in ions:
+           try:
+               if self.readme['N'+key] != 0:
+                   simIons.append(key)
+           except KeyError:
+               continue
+                
+        return simIons
 
     #fraction of each lipid with respect to total amount of lipids      
     def molarFraction(self, molecule,molecules=lipid_numbers_list): #only for lipids
@@ -55,9 +67,8 @@ class Simulation:
             N_molecule = self.readme['N'+molecule] #number of ions
         except KeyError:
             N_molecule = 0
-            
-
         
+
         lipids2 = []
         if exp_counter_ions and N_molecule != 0:
             for lipid in lipids1:
@@ -69,7 +80,7 @@ class Simulation:
         
         N_molecule = N_molecule - sum(lipids2)
         print(N_molecule)
-            
+        
         c_molecule = (N_molecule * c_water) / N_water
         print(c_molecule)
         
@@ -108,22 +119,22 @@ class Experiment:
             except KeyError:
                 continue
         return lipids
-##################
-
-
-
-#???????
-def getMolecules(readme,molecules=lipid_numbers_list):
-    molecules = []
-    for key in molecules:
-        try:
-            if readme['N'+key] != [0,0] or readme['N'+key] != 0: 
-                molecules.append(key)
-        except KeyError:
-            continue
-
-    return molecules
     
+    def getIons(self, ions):
+        expIons = []
+        
+        for key in ions:
+            try:
+                if self.readme['ION_CONCENTRATIONS'][key] != 0: 
+                    expIons.append(key)
+            except KeyError:
+                continue    
+            try:
+                if key in self.readme['COUNTER_IONS'].keys():
+                    expIons.append(key)
+            except AttributeError:
+                continue
+        return expIons
  
        
 ####################plot data #########################
@@ -197,6 +208,10 @@ def plotData(simulation, experiment):
    #     plt.savefig('./figures/' + simulation.readme.get('SYSTEM') + '.png', bbox_inches='tight')
         plt.savefig(save_plot_path + simulation.readme.get('SYSTEM') + '.png', bbox_inches='tight')
         plt.close()
+####################################################################################################
+
+    
+
 
 ##############################################
 #loop over the simulations in the simulation databank and read simulation readme and order parameter files into objects
@@ -258,13 +273,16 @@ for experiment in experiments:
       #  print(experiment.getLipids())
 
     exp_total_lipid_concentration = experiment.readme['TOTAL_LIPID_CONCENTRATION']
+    exp_ions = experiment.getIons(ions_list)
+   # print('experiment ions: ' + str(exp_ions)) 
     exp_counter_ions = experiment.readme['COUNTER_IONS']
 
     for simulation in simulations:
         sim_lipids = simulation.getLipids()
         # continue if lipids are same
         if set(sim_lipids) == set(exp_lipids):
-            sim_molecules = getMolecules(simulation.readme, molecules= ions)
+            sim_ions = simulation.getIons(ions_list)
+          #  print("simulation ions " + str(sim_ions)) 
             sim_total_lipid_concentration = simulation.totalLipidConcentration() 
             #print(lipids)
             t_sim = simulation.readme['TEMPERATURE']
@@ -272,15 +290,15 @@ for experiment in experiments:
             #calculate molar fractions from simulation
             for lipid in sim_lipids:
                 sim_molar_fractions[lipid] = simulation.molarFraction(lipid)
-            print(simulation.readme['SYSTEM'])
-            print(sim_molar_fractions)
-            print("total lipid concentration: " + str(sim_total_lipid_concentration))
+  #          print(simulation.readme['SYSTEM'])
+  #          print(sim_molar_fractions)
+  #          print("total lipid concentration: " + str(sim_total_lipid_concentration))
 
             #calculate concentrations of other molecules
             sim_concentrations = {}
-            for molecule in ions:
+            for molecule in ions_list:
                 sim_concentrations[molecule] = simulation.ionConcentration(molecule, exp_counter_ions)
-            print(sim_concentrations)
+   #         print(sim_concentrations)
     
 
         
@@ -291,18 +309,13 @@ for experiment in experiments:
 
             c_ok = 0
 
-#            if 'POPG' in simulation.readme['SYSTEM']: 
-#                print(simulation.indexingPath)
-                
-#            if 'POPE' in simulation.readme['SYSTEM']:
-#                print(simulation.indexingPath)
-            
-            if sim_molecules:
-                for key in sim_molecules: 
-                    if (experiment.readme['ION_CONCENTRATIONS'][key] >= sim_concentrations[key] - 0.05) and (experiment.readme['ION_CONCENTRATIONS'][key] <= sim_concentrations[key] + 0.05):
-                        c_ok += 1
-            else:                    
-                c_ok = 0
+
+            if set(sim_ions) == set(exp_ions):
+              #  print(sim_ions)
+              #  print(exp_ions)
+                for key in sim_ions:
+                    if (experiment.readme['ION_CONCENTRATIONS'][key] >= sim_concentrations[key] - 0.05) and (experiment.readme['ION_CONCENTRATIONS'][key] <= sim_concentrations[key] + 0.05): # onko simulaation ja kokeen ionikonsentraatio tarpeeksi lähellä
+                        c_ok += 1 
 
 
             switch = 0
@@ -317,7 +330,7 @@ for experiment in experiments:
             if switch == 1: 
             #check temperature +/- 2 degrees
                 t_exp = experiment.readme['TEMPERATURE']
-                if (mf_ok == len(sim_lipids)) and (c_ok == len(sim_molecules)) and (t_exp >= float(t_sim) - 2.0) and (t_exp <= float(t_sim) + 2.0):
+                if (mf_ok == len(sim_lipids)) and (c_ok == len(sim_ions)) and (t_exp >= float(t_sim) - 2.0) and (t_exp <= float(t_sim) + 2.0):
                     #  print(simulation.indexingPath)
                     pairs.append([simulation, experiment])
                     print(simulation.readme['SYSTEM'])
@@ -335,14 +348,14 @@ for experiment in experiments:
 #make file paths for saving quality evaluation plots
 os.system('mkdir ../Data/QualityEvaluation')     
 #os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
-os.system('mkdir ../Data/QualityEvaluation/TST')
+os.system('mkdir ../Data/QualityEvaluation/')
 
 for pair in pairs:
     sub_dirs = pair[0].indexingPath.split("/")
-    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0])
-    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1])
-    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
-    os.system('mkdir ../Data/QualityEvaluation/TST/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
+    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0])
+    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1])
+    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
+    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
     
     #plot order parameters
 #    plotData(pair[0],pair[1])
