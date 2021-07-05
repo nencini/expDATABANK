@@ -370,11 +370,11 @@ for experiment in experiments:
     
                     with open(outfileDICT, 'w') as f:
                         yaml.dump(simulation.readme,f, sort_keys=False)
-
-#for pair in pairs:
-#    print(pair[0].readme)
-#    print(pair[1].readme)
-#print(len(pairs))                         
+print("Found " + str(len(pairs)) + " pairs")  
+for pair in pairs:
+    print(pair[0].readme)
+    print(pair[1].readme)
+                       
 
 ########################ORDER PARAMETER QUALITY ANALYSIS#######################################                
                 
