@@ -2,8 +2,11 @@ import os
 import yaml
 import json
 import matplotlib.pyplot as plt
+import numpy as np
+import math
 
 from matplotlib import cm
+from scipy.stats import norm
 
 
 databank_path = '../../NMRLipids_Databank/Databank/Data/Simulations'
@@ -74,15 +77,15 @@ class Simulation:
             for lipid in lipids1:
                 if molecule in exp_counter_ions.keys() and lipid == exp_counter_ions[molecule]:
                     N_lipid = self.readme['N'+lipid]
-                    print("TÄSSÄ" + molecule + " " + lipid)
-                    print(self.readme)
+                 #   print(molecule + " " + lipid)
+                 #   print(self.readme)
                     lipids2.append(sum(N_lipid))
         
         N_molecule = N_molecule - sum(lipids2)
-        print(N_molecule)
+       # print(N_molecule)
         
         c_molecule = (N_molecule * c_water) / N_water
-        print(c_molecule)
+        #print(c_molecule)
         
         return c_molecule
         
@@ -209,9 +212,33 @@ def plotData(simulation, experiment):
         plt.savefig(save_plot_path + simulation.readme.get('SYSTEM') + '.png', bbox_inches='tight')
         plt.close()
 ####################################################################################################
+#Quality evaluation
+#assume that an order parameter calculated S from a simulation is normally distributed
+# OP_sd = sqrt(N)*STEM, where N is number of lipids and STEM is standard error of mean
+#def OP_sd(N, STEM):
+#    op_sd = math.sqrt(N)*STEM
+#    
+#    return op_sd
 
+# op_sd = STEM
     
+# P: what is the probability that S_exp +/- 0.02 is in g(s) where g(s) is the probability density function of normal distribution N(s, S_sim, S_sim_sd)
 
+#def prob_S_in_g(OP_exp, exp_error, OP_sim, op_sim_sd):
+#    #normal distribution N(s, OP_sim, op_sim_sd)
+#    a = OP_exp - exp_error
+#    b = OP_exp + exp_error
+    
+#    P_S = norm.cdf(b, loc=OP_sim, scale=op_sim_sd) - norm.cdf(a, loc=OP_sim, scale=op_sim_sd)
+    
+#    return P_S
+    
+# quality of simulated order parameter
+#def OPquality(P_S, op_sim_err):
+    
+#    quality = P_S / op_sim_err
+    
+#    return quality
 
 ##############################################
 #loop over the simulations in the simulation databank and read simulation readme and order parameter files into objects
@@ -255,8 +282,9 @@ for exp_subdir, exp_dirs, exp_files in os.walk(r'../Data/experiments'):
                 expOPdata = {}
                 for filename2 in exp_files:
                     if filename2.endswith('Order_Parameters.json'):
-                        key_data2 = filename2.replace('Order_Parameters.json','')
-                        dataPath = exp_subdir + '/Order_Parameters.json' #json!
+                        key_data2 = filename2.replace('_Order_Parameters.json','')
+                        #print(key_data2)
+                        dataPath = exp_subdir + '/' + filename2 #json!
                         with open(dataPath) as json_file:
                             expOPdata[key_data2] = json.load(json_file)
                             json_file.close()
@@ -343,26 +371,79 @@ for experiment in experiments:
                     with open(outfileDICT, 'w') as f:
                         yaml.dump(simulation.readme,f, sort_keys=False)
 
-                
-                
-#make file paths for saving quality evaluation plots
-os.system('mkdir ../Data/QualityEvaluation')     
-#os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
-os.system('mkdir ../Data/QualityEvaluation/')
+#for pair in pairs:
+#    print(pair[0].readme)
+#    print(pair[1].readme)
+#print(len(pairs))                         
 
-for pair in pairs:
-    sub_dirs = pair[0].indexingPath.split("/")
-    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0])
-    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1])
-    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
-    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
+########################ORDER PARAMETER QUALITY ANALYSIS#######################################                
+                
+#make file paths for saving quality evaluation 
+#os.system('mkdir ../Data/QualityEvaluation')
+#os.system('mkdir ../Data/QualityEvaluation/OrderParameters')
+#os.system('mkdir ../Data/QualityEvaluation/')
+
+#for pair in pairs:
+#    sub_dirs = pair[0].indexingPath.split("/")
+#    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0])
+#    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1])
+#    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2])
     
-    #plot order parameters
-#    plotData(pair[0],pair[1])
+#    os.system('mkdir ../Data/QualityEvaluation/' + sub_dirs[0] + '/' + sub_dirs[1] + '/' + sub_dirs[2] + '/' + sub_dirs[3])
+#    DATAdir = '../Data/QualityEvaluation/' + str(sub_dirs[0]) + '/' + str(sub_dirs[1]) + '/' + str(sub_dirs[2]) + '/' + str(sub_dirs[3])
+    
+    # measured values do not exist for all CH!!!!! need to take mapping name and find matching CH from simulation
+    # read existing experimental values and mapping names to match with simulated CH bonds
+#    print(pair[0].indexingPath)
+#    for lipid1 in pair[0].getLipids():
+#        print(lipid1)
+#        print(pair[1].dataPath)
+#        print(pair[1].data.keys())
+#        OP_data_lipid = pair[0].data[lipid1]
+        #print(OP_data_lipid)
+#        N = float(sum(pair[0].readme['N'+lipid1])) # number of lipids per lipid type
+#        print(N)
+#        try:
+#            exp_OP_data = pair[1].data[lipid1]
+#        except KeyError:
+#            print("Experimental order parameter data do not exist for lipid " + lipid1 + ".")
+#            continue
+#        exp_error = 0.02
+
+#        OP_qual_data = {}
+        
+#        for key, value in exp_OP_data.items():
+#            if value[0] is not 'NaN':
+#                OP_exp = value[0][0]
+#                OP_sim = OP_data_lipid[key][0][0]
+#           #     print(OP_data_lipid[key])
+#                op_sim_sd = OP_data_lipid[key][0][2] #standard error of mean
+#                print(key)
+#                print(op_sim_STEM) 
+#                op_sim_err = OP_data_lipid[key][0][1]
+#                op_sim_sd =  OP_sd(N, op_sim_STEM)
+
+#                S_prob = prob_S_in_g(OP_exp, exp_error, OP_sim, op_sim_sd)
             
-    print(pair[0].readme)
-    print(pair[1].readme)
-print(len(pairs))
+#                OP_qual_data[key] = OPquality(S_prob, op_sim_err)
+                
+#        outfile = DATAdir + '/' + lipid1 + '_OP_quality.json'
+        
+#        with open(outfile, 'w') as f:
+#            json.dump(OP_qual_data,f)
+
+#        f.close()
+                
+        
+                
+                
+            
+            
+            
+            
+            
+
+
 
 
 
