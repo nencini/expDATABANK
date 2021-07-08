@@ -117,7 +117,7 @@ for simulation in simulations:
         with open(READMEfilepathExperiment) as yaml_file_exp:
             readmeExp = yaml.load(yaml_file_exp, Loader=yaml.FullLoader)
             experiment.readme = readmeExp
-            print(experiment.readme)
+            #print(experiment.readme)
         yaml_file_exp.close()
 
         lipidExpOPdata = {}
@@ -127,6 +127,11 @@ for simulation in simulations:
             with open(exp_OP_filepath) as json_file:
                 lipidExpOPdata = json.load(json_file)
             json_file.close()
+            
+            simulationREADMEsave = DATAdir + '/README.yaml'
+            with open(simulationREADMEsave, 'w') as f:
+                yaml.dump(simulation.readme,f, sort_keys=False)
+            f.close()
         except FileNotFoundError:
             print("Experimental order parameter data do not exist for lipid " + lipid1 + ".")
             continue
@@ -138,8 +143,8 @@ for simulation in simulations:
         for key, value in lipidExpOPdata.items():
             if lipidExpOPdata[key][0][0] is not 'NaN':
                 OP_array = [float(x) for x in OP_data_lipid[key][0]] #convert elements to float because in some files the elements are strings
-                print(OP_array)
-                print(type(OP_array))
+                #print(OP_array)
+                #print(type(OP_array))
                 OP_exp = value[0][0]
                 OP_sim = OP_array[0]
                 op_sim_sd = OP_array[2] #standard error of mean
@@ -148,9 +153,9 @@ for simulation in simulations:
                 S_prob = prob_S_in_g(OP_exp, exp_error, OP_sim, op_sim_sd)
              
                 op_quality = OPquality(S_prob, op_sim_STEM) #numpy float must be converted to float
-                print(type(op_quality))
+                #print(type(op_quality))
                 OP_array.append(op_quality)
-                print(OP_array)
+                #print(OP_array)
                 
                 OP_qual_data[key] = OP_array
                 
@@ -172,7 +177,11 @@ for simulation in simulations:
             json.dump(OP_qual_data,f)
         f.close()
         
-        print(OP_qual_data)                        
+       
+        
+        
+        
+      #  print(OP_qual_data)                        
                 
                 
                 
