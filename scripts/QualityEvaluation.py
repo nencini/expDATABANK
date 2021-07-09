@@ -60,11 +60,11 @@ def prob_S_in_g(OP_exp, exp_error, OP_sim, op_sim_sd):
     return P_S
     
 # quality of simulated order parameter
-def OPquality(P_S):
+def OPquality(P_S,op_sim_STEM):
     print('probability')
     print(P_S)
     if P_S != 0:
-        quality = math.log(P_S)                   #/ math.sqrt(op_sim_STEM) #/ (op_sim_STEM*op_sim_STEM)
+        quality = math.log(P_S/op_sim_STEM)                   #/ math.sqrt(op_sim_STEM) #/ (op_sim_STEM*op_sim_STEM)
     else:
         quality = -1000
    # quality_float = quality.item()
@@ -165,7 +165,7 @@ for simulation in simulations:
 
                 S_prob = prob_S_in_g(OP_exp, exp_error, OP_sim, op_sim_sd) #(OP_exp, exp_error, OP_sim, op_sim_sd)
              
-                op_quality = OPquality(S_prob) #, op_sim_STEM) #numpy float must be converted to float
+                op_quality = OPquality(S_prob, op_sim_STEM) #numpy float must be converted to float
                 #print(type(op_quality))
                 OP_array.append(op_quality)
                 #print(OP_array)
