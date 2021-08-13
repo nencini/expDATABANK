@@ -272,11 +272,6 @@ for exp_subdir, exp_dirs, exp_files in os.walk(r'../Data/experiments'):
         if filepath_exp.endswith("README.yaml"):
             READMEfilepathExperiment = exp_subdir + '/README.yaml'
        #     print(READMEfilepathExperiment)
-       #     with open(READMEfilepathExperiment) as yaml_file_exp:
-       #         readmeExp = yaml.load(yaml_file_exp, Loader=yaml.FullLoader)
-       #         dataPath = exp_subdir + '/Order_Parameters.dat' #json!
-       #         experiments.append(Experiment(readmeExp, dataPath))
-       #         yaml_file_exp.close()
             with open(READMEfilepathExperiment) as yaml_file_exp:
                 readmeExp = yaml.load(yaml_file_exp, Loader=yaml.FullLoader)
                 expOPdata = {}
@@ -365,8 +360,8 @@ for experiment in experiments:
                     print(simulation.indexingPath)
                     print(experiment.dataPath)
                     #Add path to experiment into simulation README.yaml
-                    simulation.readme['EXPERIMENT'] = experiment.dataPath +'/'
-                
+                    simulation.readme['EXPERIMENT'] = "/".join(experiment.dataPath.split("/")[3:6])         #"/".join(filepath.split("/")[6:10])
+                    print(simulation.readme['EXPERIMENT'])
                     outfileDICT = '../../NMRLipids_Databank/Databank/Data/Simulations/'+ simulation.indexingPath + '/README.yaml'
     
                     with open(outfileDICT, 'w') as f:
