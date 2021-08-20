@@ -7,27 +7,27 @@ import numpy as np
 import yaml
 import json
 
-data_file ="/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/POPE/T310K/Order_Parameters.dat"
+data_file ="/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/scrap/POPS/T298K/Order_Parameters.dat"
 
-save_dir = "/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/experiments/10.5281/zenodo.47488647/2"
+save_dir = "/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/experiments/10.1021/acs.jpcb.9b06091/1"
 
 #experiment information
 
-save_info = {}
-save_info['DOI'] = "10.5281/zenodo.47488647"
-save_info['TEMPERATURE'] = 310
-save_info['MOLECULE_FRACTIONS'] = {'POPE': 1}
-print(save_info)
+#save_info = {}
+#save_info['DOI'] = "10.5281/zenodo.47488647"
+#save_info['TEMPERATURE'] = 310
+#save_info['MOLECULE_FRACTIONS'] = {'POPE': 1}
+#print(save_info)
 
-outfileDICT = str(save_dir) + '/README.yaml'
+#outfileDICT = str(save_dir) + '/README.yaml'
     
-with open(outfileDICT, 'w') as f:
-    yaml.dump(save_info,f, sort_keys=False)
+#with open(outfileDICT, 'w') as f:
+#    yaml.dump(save_info,f, sort_keys=False)
 
 
 #write data in json
 
-outfile = save_dir + "/Order_Parameters.json"
+outfile = save_dir + "/POPS_Order_Parameters.json"
 data = {}
 
 with open(data_file) as OPfile:
@@ -37,7 +37,7 @@ with open(data_file) as OPfile:
             continue
         print(line.split())
         OPname = line.split()[0] + " " + line.split()[1]
-        OPvalues = [float(line.split()[2]), float(line.split()[3])]
+        OPvalues = [float(line.split()[2])] #, float(line.split()[3])]
         data[str(OPname)]=[]
         data[str(OPname)].append(OPvalues)
         
