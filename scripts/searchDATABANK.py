@@ -245,7 +245,7 @@ def plotData(simulation, experiment):
 #loop over the simulations in the simulation databank and read simulation readme and order parameter files into objects
 simulations = []
 
-for subdir, dirs, files in os.walk(r'../../NMRLipids_Databank/Databank/Data/Simulations/'): 
+for subdir, dirs, files in os.walk(r'../../Databank/Data/Simulations/'): 
     for filename1 in files:
         filepath = subdir + os.sep + filename1
         
@@ -253,7 +253,7 @@ for subdir, dirs, files in os.walk(r'../../NMRLipids_Databank/Databank/Data/Simu
             READMEfilepathSimulation = subdir + '/README.yaml'
             with open(READMEfilepathSimulation) as yaml_file_sim:
                 readmeSim = yaml.load(yaml_file_sim, Loader=yaml.FullLoader)
-                indexingPath = "/".join(filepath.split("/")[6:10])
+                indexingPath = "/".join(filepath.split("/")[5:9])
                 simOPdata = {} #order parameter files for each type of lipid
                 for filename2 in files:
                     if filename2.endswith('OrderParameters.json'):
@@ -363,7 +363,7 @@ for experiment in experiments:
                     #Add path to experiment into simulation README.yaml
                     simulation.readme['EXPERIMENT'] = "/".join(experiment.dataPath.split("/")[3:6])         #"/".join(filepath.split("/")[6:10])
                     print(simulation.readme['EXPERIMENT'])
-                    outfileDICT = '../../NMRLipids_Databank/Databank/Data/Simulations/'+ simulation.indexingPath + '/README.yaml'
+                    outfileDICT = '../../Databank/Data/Simulations/'+ simulation.indexingPath + '/README.yaml'
     
                     with open(outfileDICT, 'w') as f:
                         yaml.dump(simulation.readme,f, sort_keys=False)

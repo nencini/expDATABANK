@@ -7,9 +7,9 @@ import numpy as np
 import yaml
 import json
 
-data_file ="/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/scrap/POPS/T298K/Order_Parameters.dat"
+data_file ="/media/osollila/Data/NMRlipids/expDATABANK/Data/experiments/10.1021/acs.jctc.9b00824/1/POPS_Order_Parameters.dat"
 
-save_dir = "/media/akiirikk/DATADRIVE1/tietokanta/expDATABANK/Data/experiments/10.1021/acs.jpcb.9b06091/1"
+save_dir = "/media/osollila/Data/NMRlipids/expDATABANK/Data/experiments/10.1021/acs.jctc.9b00824/1"
 
 #experiment information
 
